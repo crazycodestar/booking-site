@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { cn } from "@/lib/utils";
-import { userAuthSchema } from "@/lib/validations/auth";
+import { userRegistrationSchema } from "@/lib/validations/auth";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,15 +17,18 @@ import { Loader } from "lucide-react";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-type FormData = z.infer<typeof userAuthSchema>;
+type FormData = z.infer<typeof userRegistrationSchema>;
 
-export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+export function UserRegistrationForm({
+	className,
+	...props
+}: UserAuthFormProps) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 	} = useForm<FormData>({
-		resolver: zodResolver(userAuthSchema),
+		resolver: zodResolver(userRegistrationSchema),
 	});
 	const [isLoading, setIsLoading] = React.useState<boolean>(false);
 	const searchParams = useSearchParams();
@@ -33,21 +36,46 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 	async function onSubmit(data: FormData) {
 		setIsLoading(true);
 
-		const signInResult = await signIn("credentials", {
-			email: data.email.toLowerCase(),
-			password: data.password,
-			redirect: true,
-			callbackUrl: searchParams?.get("from") || "/dashboard",
-		});
+		// const signInResult = await signIn("credentials", {
+		// 	name: data.name,
+		// 	email: data.email.toLowerCase(),
+		// 	password: data.password,
+		// 	redirect: false,
+		// 	callbackUrl: searchParams?.get("from") || "/dashboard",
+		// });
 
-		setIsLoading(false);
+		try {
+			// TODO: clean up fetch setup
+			type Temp = {
+				ok: boolean;
+				json: () => Promise<{ message: string }>;
+			};
+			const signInResult = (await fetch("/api/account", {
+				method: "POST",
+				body: JSON.stringify(data),
+				headers: {
+					"Content-Type": "application/json",
+				},
+			})) as unknown as Temp;
 
-		if (!signInResult?.ok) {
+			setIsLoading(false);
+
+			if (!signInResult?.ok) {
+				return toast({
+					title: "Something went wrong.",
+					description: "Your sign in request failed. Please try again.",
+					variant: "destructive",
+				});
+			}
+
 			return toast({
-				title: "Something went wrong.",
-				description: "Your sign in request failed. Please try again.",
-				variant: "destructive",
+				title: "Successful",
+				description: "Your account as been created successfully",
 			});
+
+			// await signIn(undefined, { callbackUrl: "/dashboard" });
+		} catch (err) {
+			console.log(err);
 		}
 	}
 
@@ -56,6 +84,24 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="grid gap-4">
 					<div className="flex gap-2 flex-col">
+						<div className="grid gap-1">
+							<Label htmlFor="name">Name</Label>
+							<Input
+								id="name"
+								placeholder="John Doe"
+								type="text"
+								autoCapitalize="none"
+								autoComplete="off"
+								autoCorrect="off"
+								disabled={isLoading}
+								{...register("name")}
+							/>
+							{errors?.name && (
+								<p className="px-1 text-xs text-red-600">
+									{errors.name.message}
+								</p>
+							)}
+						</div>
 						<div className="grid gap-1">
 							<Label htmlFor="email">Email</Label>
 							<Input
