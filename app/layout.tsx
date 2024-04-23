@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { Toaster } from "@/components/ui/toaster";
+import Providers from "./providers";
 
 const fontSans = FontSans({ subsets: ["latin"], variable: "--font-sans" });
 const fontHeading = FontHeading({
@@ -24,20 +25,22 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body
-				className={cn(
-					"min-h-screen bg-background font-sans antialiased",
-					fontSans.variable,
-					fontHeading.variable
-				)}
-			>
-				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-					{children}
-					<TailwindIndicator />
-					<Toaster />
-				</ThemeProvider>
-			</body>
-		</html>
+		<Providers>
+			<html lang="en">
+				<body
+					className={cn(
+						"min-h-screen bg-background font-sans antialiased",
+						fontSans.variable,
+						fontHeading.variable
+					)}
+				>
+					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+						{children}
+						<TailwindIndicator />
+						<Toaster />
+					</ThemeProvider>
+				</body>
+			</html>
+		</Providers>
 	);
 }

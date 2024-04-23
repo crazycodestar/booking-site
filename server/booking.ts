@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { date } from "zod";
 import { generateTimeSlots } from "../lib/time-functions";
 
 export const getAvaliableBooking = () => {
