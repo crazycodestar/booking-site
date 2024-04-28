@@ -46,6 +46,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   bookings Booking[]
+  role Role @relation(fields: [roleId], references: [id])
+  roleId String
 }
 
 model VerificationRequest {
@@ -61,7 +63,7 @@ model VerificationRequest {
 
 model Seat {
   id String @id @default(cuid())
-  name String
+  name String @unique
   bookings Booking[]
 }
 
@@ -83,4 +85,10 @@ model BookingStatus {
   id String @id @default(cuid())
   status String
   booking Booking[]
+}
+
+model Role {
+  id String @id @default(cuid())
+  role String
+  user User[]
 }

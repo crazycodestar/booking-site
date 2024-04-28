@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { Toaster } from "@/components/ui/toaster";
 import Providers from "./providers";
+import { NextUIProvider } from "@nextui-org/react";
 
 const fontSans = FontSans({ subsets: ["latin"], variable: "--font-sans" });
 const fontHeading = FontHeading({
@@ -34,11 +35,13 @@ export default function RootLayout({
 						fontHeading.variable
 					)}
 				>
-					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-						{children}
-						<TailwindIndicator />
-						<Toaster />
-					</ThemeProvider>
+					<NextUIProvider>
+						<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+							{children}
+							<TailwindIndicator />
+							<Toaster />
+						</ThemeProvider>
+					</NextUIProvider>
 				</body>
 			</html>
 		</Providers>

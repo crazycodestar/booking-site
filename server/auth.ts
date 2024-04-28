@@ -1,14 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
-import type { NextAuthOptions, DefaultUser } from "next-auth";
+import type { NextAuthOptions, DefaultUser, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma as PrismaConfig } from "@/server/db";
+import { Session } from "inspector";
 
 declare module "next-auth" {
 	interface User extends DefaultUser {
 		id: string;
-		randomKey: string;
+		role: string;
+	}
+	interface Session {
+		user: {
+			id: string;
+			role: string;
+		} & DefaultSession["user"];
 	}
 }
 
@@ -40,6 +47,9 @@ export const authOptions: NextAuthOptions = {
 					where: {
 						email: credentials.email,
 					},
+					include: {
+						role: true,
+					},
 				});
 
 				if (!user) return null;
@@ -54,22 +64,28 @@ export const authOptions: NextAuthOptions = {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					randomKey: "Hey cool",
+					role: user.role.role,
 				};
 			},
 		}),
 	],
 	callbacks: {
-		session: ({ session, token }) => {
-			// console.log("Session Callback", { session, token });
-			return {
-				...session,
-				user: {
-					...session.user,
-					id: token.id,
-					randomKey: token.randomKey,
+		session: async ({ session }) => {
+			if (!session.user?.email) return;
+
+			const user = await prisma.user.findUnique({
+				where: {
+					email: session.user?.email,
 				},
-			};
+				include: {
+					role: true,
+				},
+			});
+			if (!user) return session;
+
+			session.user.id = user.id;
+			session.user.role = user?.role.role;
+			return session;
 		},
 		jwt: ({ token, user }) => {
 			// console.log("JWT Callback", { token, user });
@@ -79,7 +95,6 @@ export const authOptions: NextAuthOptions = {
 				return {
 					...token,
 					id: u.id,
-					randomKey: u.randomKey,
 				};
 			}
 			return token;

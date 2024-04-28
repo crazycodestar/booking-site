@@ -19,7 +19,6 @@ test("Page", () => {
 	];
 	const slots = generateTimeSlots(startTime, endTime);
 	const vacantTime = findVacantTimes(occupiedTime);
-	console.log(vacantTime);
 
 	expect(slots).toBeDefined();
 });

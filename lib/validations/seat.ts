@@ -1,4 +1,6 @@
 import * as z from "zod";
+import { BookingReturnData } from "@/lib/validations/booking";
+import _ from "lodash";
 
 export const createSeatSchema = z.object({
 	name: z
@@ -8,3 +10,12 @@ export const createSeatSchema = z.object({
 });
 
 export type createSeatSchema = z.infer<typeof createSeatSchema>;
+
+export const GetSeatsResponseSchema = z.array(
+	z.object({
+		name: z.string(),
+		bookings: z.array(z.object(BookingReturnData)),
+	})
+);
+
+export type GetSeatsResponseSchema = z.infer<typeof GetSeatsResponseSchema>;
