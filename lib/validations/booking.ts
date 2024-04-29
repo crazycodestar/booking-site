@@ -43,3 +43,12 @@ export const GetOneBookingResponseSchema = z.object({
 export type GetOneBookingResponseSchema = z.infer<
 	typeof GetOneBookingResponseSchema
 >;
+
+export const UserBookingSchema = z.object({
+	userId: z.string(),
+	seatName: z.string(),
+	time: z.any().refine((time: Time) => time), //FIXME: make allowed time be only 5 minutes from current time
+	duration: z.coerce.number().min(30, "Duration must be atleat 30mins"),
+});
+
+export type UserBookingSchema = z.infer<typeof UserBookingSchema>;

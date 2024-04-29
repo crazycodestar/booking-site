@@ -237,7 +237,8 @@ export const findCurrenttBooking = (
 
 		return (
 			isFirstTimeEarlier(startTime, currentTime) &&
-			isFirstTimeEarlier(currentTime, endTime)
+			isFirstTimeEarlier(currentTime, endTime) &&
+			(booking.status === "ACTIVE" || booking.status === "PENDING")
 		);
 	});
 };
@@ -249,6 +250,22 @@ export const findNextBooking = (
 		const currentTime = new Date(Date.now());
 		const startTime = new Date(booking.entryTime);
 
-		return isFirstTimeEarlier(currentTime, startTime);
+		return (
+			isFirstTimeEarlier(currentTime, startTime) &&
+			(booking.status === "ACTIVE" || booking.status === "PENDING")
+		);
 	});
 };
+
+export function formatTime(date: Date) {
+	// Get hours and minutes from the Date object
+	const hours = date.getUTCHours();
+	const minutes = date.getUTCMinutes();
+
+	// Format hours and minutes with leading zeros if necessary
+	const formattedHours = String(hours).padStart(2, "0");
+	const formattedMinutes = String(minutes).padStart(2, "0");
+
+	// Combine hours and minutes with a colon
+	return formattedHours + ":" + formattedMinutes;
+}
