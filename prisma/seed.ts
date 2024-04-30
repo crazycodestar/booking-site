@@ -6,52 +6,119 @@ const prisma = new PrismaClient();
 const generateRoomNumber = (index: number) => "00" + index;
 
 async function main() {
-	let AdminRoleId: string | undefined;
-	// create roles
-	const roles = ["ADMIN", "USER"];
-	roles.forEach(async (role) => {
-		const result = await prisma.role.upsert({
-			where: {
-				role: role,
-			},
-			update: {},
-			create: {
-				role: role,
-			},
-		});
-		if (role === "ADMIN") AdminRoleId = result.id;
-	});
+	// // create roles
+	const roleNames = ["ADMIN", "USER"];
+	const roles = await Promise.all(
+		roleNames.map(async (role) => {
+			const result = await prisma.role.upsert({
+				where: {
+					role,
+				},
+				update: {},
+				create: {
+					role: role,
+				},
+			});
 
-	if (!AdminRoleId) throw new Error("Admin Role Failed");
+			return result;
+		})
+	);
+
+	if (!roles.length) throw new Error("No roles created");
 
 	// create User
 
+	const adminRole = roles.find((role) => role.role === "ADMIN");
+	if (!adminRole) throw new Error("No Admin role found");
+
+	const email = "admin@admin.com";
 	const password = await hash("password123", 12);
 	const user = await prisma.user.upsert({
-		where: { email: "admin@admin.com" },
+		where: {
+			email,
+		},
 		update: {},
 		create: {
-			email: "admin@admin.com",
+			email,
 			name: "Admin",
 			password,
-			roleId: AdminRoleId,
+			roleId: adminRole.id,
 		},
 	});
 
 	// create booking status
 
-	const bookingStatus = ["PENDING", "ACTIVE", "USED", "EXPIRED", "CANCELLED"];
-	bookingStatus.forEach(async (bookingStatus) => {
-		await prisma.bookingStatus.upsert({
-			where: {
-				status: bookingStatus,
-			},
-			update: {},
-			create: {
-				status: bookingStatus,
-			},
-		});
+	const bookingStatusNames = [
+		"PENDING",
+		"ACTIVE",
+		"USED",
+		"EXPIRED",
+		"CANCELLED",
+	];
+	const bookingStatusPending = await prisma.bookingStatus.upsert({
+		where: {
+			status: "PENDING",
+		},
+		update: {},
+		create: {
+			status: "PENDING",
+		},
 	});
+
+	if (!bookingStatusPending)
+		throw new Error("bookstatus not created. status: " + "PENDING");
+
+	const bookingStatusActive = await prisma.bookingStatus.upsert({
+		where: {
+			status: "ACTIVE",
+		},
+		update: {},
+		create: {
+			status: "ACTIVE",
+		},
+	});
+
+	if (!bookingStatusActive)
+		throw new Error("bookstatus not created. status: " + "ACTIVE");
+
+	const bookingStatusUsed = await prisma.bookingStatus.upsert({
+		where: {
+			status: "USED",
+		},
+		update: {},
+		create: {
+			status: "USED",
+		},
+	});
+
+	if (!bookingStatusUsed)
+		throw new Error("bookstatus not created. status: " + "USED");
+
+	const bookingStatusCancelled = await prisma.bookingStatus.upsert({
+		where: {
+			status: "CANCELLED",
+		},
+		update: {},
+		create: {
+			status: "CANCELLED",
+		},
+	});
+
+	if (!bookingStatusCancelled)
+		throw new Error("bookstatus not created. status: " + "CANCELLED");
+
+	const bookingStatusExpired = await prisma.bookingStatus.upsert({
+		where: {
+			status: "EXPIRED",
+		},
+		update: {},
+		create: {
+			status: "EXPIRED",
+		},
+	});
+
+	if (!bookingStatusExpired)
+		throw new Error("bookstatus not created. status: " + "EXPIRED");
 
 	// create Rooms and seats
 	const images = [
@@ -67,28 +134,80 @@ async function main() {
 		"https://images.pexels.com/photos/6183137/pexels-photo-6183137.jpeg?auto=compress&cs=tinysrgb&w=600",
 	];
 
-	for (let i = 1; i <= 10; i++) {
-		const roomNumber = generateRoomNumber(i);
-		const room = await prisma.room.create({
-			data: {
-				roomNumber: roomNumber,
-				image: images[i - 1],
-			},
-		});
-		if (!room) throw new Error("room not created room: " + roomNumber);
-
-		for (let j = 1; j <= 10; j++) {
-			const seatNumber = generateRoomNumber(j);
-			const seat = await prisma.seat.create({
-				data: {
-					name: seatNumber,
-					roomId: room.id,
+	const rooms = await Promise.all(
+		images.map(async (image, index) => {
+			const roomNumber = generateRoomNumber(index + 1);
+			const room = await prisma.room.upsert({
+				where: {
+					roomNumber: roomNumber,
+				},
+				update: {},
+				create: {
+					roomNumber: roomNumber,
+					image: image,
+				},
+				include: {
+					seats: true,
 				},
 			});
 
-			if (!seat) throw new Error("seat not created seat: " + seatNumber);
-		}
-	}
+			if (!room) throw new Error("room not created room: " + roomNumber);
+			return room;
+		})
+	);
+
+	if (!rooms.length) throw new Error("No rooms created");
+
+	// Create Seats
+
+	rooms.forEach(async (room) => {
+		if (room.seats.length > 0) return;
+
+		const seat = await prisma.seat.createMany({
+			data: [
+				{
+					name: "001",
+					roomId: room.id,
+				},
+				{
+					name: "002",
+					roomId: room.id,
+				},
+				{
+					name: "003",
+					roomId: room.id,
+				},
+				{
+					name: "004",
+					roomId: room.id,
+				},
+				{
+					name: "005",
+					roomId: room.id,
+				},
+				{
+					name: "006",
+					roomId: room.id,
+				},
+				{
+					name: "007",
+					roomId: room.id,
+				},
+				{
+					name: "008",
+					roomId: room.id,
+				},
+				{
+					name: "009",
+					roomId: room.id,
+				},
+				{
+					name: "0010",
+					roomId: room.id,
+				},
+			],
+		});
+	});
 }
 main()
 	.then(() => prisma.$disconnect())

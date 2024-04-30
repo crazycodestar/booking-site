@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import { cn } from "@/lib/utils";
-import { HelpCircle, LucideIcon } from "lucide-react";
-import { Card } from "@nextui-org/react";
-import { ReactElement, ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { GetUserResponseSchema } from "@/lib/validations/auth";
 
 export type SidebarNavItem = {
 	title: string;
@@ -27,6 +26,15 @@ interface DashboardNavProps {
 }
 
 export function DashboardNav({ items }: DashboardNavProps) {
+	const { data, isLoading } = useQuery({
+		queryKey: ["account"],
+		queryFn: async () => (await axios.get("api/account")).data,
+	});
+
+	const formattedUserScore = data
+		? GetUserResponseSchema.parse(data).score
+		: "loading";
+
 	const path = usePathname();
 
 	if (!items?.length) {
@@ -36,6 +44,12 @@ export function DashboardNav({ items }: DashboardNavProps) {
 	return (
 		<nav className="border rounded-md w-full lg:h-full lg:min-h-[600px] p-4">
 			<div className="flex lg:grid items-start gap-2">
+				<div className="flex justify-between py-4 px-2">
+					<h3 className="text-primary text-medium font-bold">
+						Booking Credit Score
+					</h3>
+					<p>{formattedUserScore}</p>
+				</div>
 				{items.map((item, index) => {
 					item;
 					// const Icon = item.Icon;

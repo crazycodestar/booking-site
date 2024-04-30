@@ -71,10 +71,12 @@ model Room {
 
 model Seat {
   id String @id @default(cuid())
-  name String @unique
+  name String 
   bookings Booking[]
   room Room @relation(fields: [roomId], references: [id])
   roomId String
+
+  @@unique([id, name])
 }
 
 model Booking {
