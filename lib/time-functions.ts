@@ -1,23 +1,53 @@
 import { Time } from "@internationalized/date";
-import { SeatBookingType } from "../server/booking";
-import { BookingSchema } from "./validations/booking";
+import { GetRoomsResponseSchema } from "./validations/room";
 
-export function generateTimeSlots(startTime: Date, endTime: Date) {
-	// const startTime = new Date();
-	// startTime.setHours(8, 0, 0, 0); // Set start time to 8:00AM
-	// const endTime = new Date();
-	// endTime.setHours(21, 0, 0, 0); // Set end time to 9:00PM
+export function generateTimeSlots() {
+	const startTime = new Date();
+	startTime.setUTCHours(8, 0, 0, 0); // Set start time to 8:00AM
+	const endTime = new Date();
+	endTime.setUTCHours(21, 0, 0, 0); // Set end time to 9:00PM
 
 	const timeSlots = [];
 	let currentTime = startTime;
 
 	while (currentTime <= endTime) {
 		timeSlots.push(new Date(currentTime)); // Push a copy of current time to avoid mutating the original
-		currentTime.setMinutes(currentTime.getMinutes() + 30); // Move to next 30-minute slot
+		currentTime.setMinutes(currentTime.getUTCMinutes() + 30); // Move to next 30-minute slot
 	}
 
 	return timeSlots;
 }
+
+const generateStartTimeArray = (vacancies: [Date, Date][]): Date[] => {
+	return generateTimeSlots().filter((timeSlot) =>
+		Boolean(
+			vacancies.find(
+				(vacancyRange) =>
+					isFirstTimeEarlier(vacancyRange[0], timeSlot) &&
+					isFirstTimeEarlier(timeSlot, vacancyRange[1])
+			)
+		)
+	);
+};
+
+export const getAvaliableTimeSlots = (roomVacancies: [Date, Date][][]) => {
+	return roomVacancies.reduce(
+		(accumulatedStartTimeArray, currentSeatVacancies) => {
+			const currentStartTimeArray =
+				generateStartTimeArray(currentSeatVacancies);
+			if (!accumulatedStartTimeArray.length) return currentStartTimeArray;
+
+			const toSortedStartTimeArray = [
+				...accumulatedStartTimeArray,
+				...currentStartTimeArray,
+			];
+			toSortedStartTimeArray.sort((a, b) => compareDates(a, b));
+
+			return toSortedStartTimeArray;
+		},
+		[] as Date[]
+	);
+};
 
 function isTimeWithinRange(startTime: Date, endTime: Date, checkTime: Date) {
 	// Check if checkTime is within the range
@@ -45,9 +75,9 @@ export function findVacantTimes(bookings: [Date, Date][]): [Date, Date][] {
 	//FIXME: setting booking for 8:00AM not working
 
 	const openingHour = new Date();
-	openingHour.setHours(8, 0, 0, 0); // Set opening hour to 8:00AM
+	openingHour.setUTCHours(8, 0, 0, 0); // Set opening hour to 8:00AM
 	const closingHour = new Date();
-	closingHour.setHours(21, 0, 0, 0); // Set closing hour to 9:00PM
+	closingHour.setUTCHours(21, 0, 0, 0); // Set closing hour to 9:00PM
 
 	const vacantPeriods: [Date, Date][] = [];
 
@@ -74,12 +104,12 @@ export function findVacantTimes(bookings: [Date, Date][]): [Date, Date][] {
 
 export function isFirstTimeEarlier(firstDate: Date, secondDate: Date) {
 	// Extract hours and minutes from the first date
-	const hours1 = firstDate.getHours();
-	const minutes1 = firstDate.getMinutes();
+	const hours1 = firstDate.getUTCHours();
+	const minutes1 = firstDate.getUTCMinutes();
 
 	// Extract hours and minutes from the second date
-	const hours2 = secondDate.getHours();
-	const minutes2 = secondDate.getMinutes();
+	const hours2 = secondDate.getUTCHours();
+	const minutes2 = secondDate.getUTCMinutes();
 
 	// Compare hours first
 	if (hours1 <= hours2) {
@@ -108,8 +138,8 @@ export const findAvaliableDuration = (
 
 		const endTime = vacancy[1];
 		const vacancyAvaliableTimeInMinutes =
-			(endTime.getHours() - startTime.getUTCHours()) * 60 +
-			(endTime.getMinutes() - startTime.getMinutes());
+			(endTime.getUTCHours() - startTime.getUTCHours()) * 60 +
+			(endTime.getUTCMinutes() - startTime.getUTCMinutes());
 
 		if (avaliableTimeInMinutes < vacancyAvaliableTimeInMinutes)
 			avaliableTimeInMinutes = vacancyAvaliableTimeInMinutes;
@@ -173,8 +203,8 @@ export const findSeatWithStartTimeAndDuration = (
 
 		const endTime = vacancy[1];
 		const vacancyAvaliableTimeInMinutes =
-			(endTime.getHours() - startTime.getHours()) * 60 +
-			(endTime.getMinutes() - startTime.getMinutes());
+			(endTime.getUTCHours() - startTime.getUTCHours()) * 60 +
+			(endTime.getUTCMinutes() - startTime.getUTCMinutes());
 
 		if (vacancyAvaliableTimeInMinutes < duration) return;
 
@@ -186,11 +216,11 @@ export const findSeatWithStartTimeAndDuration = (
 	if (!booking) return;
 
 	const endTimeAsTimeType = new Time(
-		startTime.getHours(),
-		startTime.getMinutes()
+		startTime.getUTCHours(),
+		startTime.getUTCMinutes()
 	).add({ minutes: duration });
 	const endTime = new Date();
-	endTime.setHours(endTimeAsTimeType.hour, endTimeAsTimeType.minute);
+	endTime.setUTCHours(endTimeAsTimeType.hour, endTimeAsTimeType.minute);
 
 	return {
 		seatId: booking.seatId,
@@ -269,3 +299,44 @@ export function formatTime(date: Date) {
 	// Combine hours and minutes with a colon
 	return formattedHours + ":" + formattedMinutes;
 }
+
+type RoomSeats = GetRoomsResponseSchema[number]["seats"];
+type ClosestBooking = { entryTime: Date; exitTime: Date; status: string };
+
+const formatBookingInSeat = (
+	bookingInSeat: Exclude<ReturnType<typeof findCurrenttBooking>, undefined>
+) => {
+	return {
+		entryTime: bookingInSeat.entryTime,
+		exitTime: bookingInSeat.exitTime,
+		status: bookingInSeat.status,
+	};
+};
+
+export const findCurrentOrNextBooking = (seats: RoomSeats) => {
+	let closestBooking: ClosestBooking | undefined;
+
+	seats.forEach((seat) => {
+		const currentBookingInSeat = findCurrenttBooking(seat.bookings);
+		const nextBookingInSeat = findNextBooking(seat.bookings);
+
+		let currentOrNextBookingInSeat: ClosestBooking | undefined;
+
+		if (currentBookingInSeat)
+			currentOrNextBookingInSeat = formatBookingInSeat(currentBookingInSeat);
+		else if (nextBookingInSeat)
+			currentOrNextBookingInSeat = formatBookingInSeat(nextBookingInSeat);
+
+		if (!currentOrNextBookingInSeat) return;
+		if (!closestBooking) return (closestBooking = currentOrNextBookingInSeat);
+		if (
+			isFirstTimeEarlier(
+				currentOrNextBookingInSeat?.entryTime,
+				closestBooking?.entryTime
+			)
+		)
+			return (closestBooking = currentOrNextBookingInSeat);
+	});
+
+	return closestBooking;
+};

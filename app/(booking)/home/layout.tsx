@@ -6,6 +6,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { UserAccountNav } from "@/components/user-account-nav";
 import { UserBookingForm } from "@/components/user-booking-form";
 import { Card } from "@/components/ui/card";
+import { BookmarkIcon, HomeIcon } from "lucide-react";
+import { ReactElement } from "react";
+import { SidebarNavItem } from "@/components/nav";
 
 export type NavItem = {
 	title: string;
@@ -14,20 +17,6 @@ export type NavItem = {
 };
 
 export type MainNavItem = NavItem;
-
-export type SidebarNavItem = {
-	title: string;
-	disabled?: boolean;
-	external?: boolean;
-} & (
-	| {
-			href: string;
-			items?: never;
-	  }
-	| {
-			href?: string;
-	  }
-);
 
 export type DashboardConfig = {
 	mainNav: MainNavItem[];
@@ -48,14 +37,17 @@ export const dashboardConfig: DashboardConfig = {
 	],
 	sidebarNav: [
 		{
-			title: "Create Booking",
+			title: "Library Rooms",
 			href: "/home",
-			// icon: "post",
 		},
 		{
 			title: "My Bookings",
 			href: "/home/mybookings",
-			// icon: "billing",
+		},
+		{
+			title: "Customer Services",
+			href: "/home#",
+			disabled: true,
 		},
 	],
 };
@@ -83,6 +75,7 @@ export default async function DashboardLayout({
 							name: user.name,
 							image: user.image,
 							email: user.email,
+							role: user.role,
 						}}
 					/>
 				</div>
@@ -94,9 +87,9 @@ export default async function DashboardLayout({
 				</h1>
 			</div>
 
-			<div className="container hidden md:block">
+			{/* <div className="container hidden md:block">
 				<UserBookingForm user={user} />
-			</div>
+			</div> */}
 			<div className="container flex flex-col lg:grid lg:grid-cols-5 gap-4">
 				<aside className="lg:col-span-1 lg:block">
 					<DashboardNav items={dashboardConfig.sidebarNav} />

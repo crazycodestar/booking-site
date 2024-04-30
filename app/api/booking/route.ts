@@ -3,6 +3,7 @@ import { getBookings, getUserBookings } from "../../../server/booking";
 import {
 	BookingSchema,
 	GetBookingResponseSchema,
+	PostBookingResponseSChema,
 } from "@/lib/validations/booking";
 import { createBooking } from "@/server/booking";
 import _ from "lodash"; //TODO: change from lodash to smth more typesafe
@@ -34,6 +35,7 @@ export async function GET(req: NextRequest) {
 				name: booking.customer.name as string,
 				status: booking.status
 					.status as GetBookingResponseSchema[number]["status"],
+				room: booking.seat.room.roomNumber,
 				seat: booking.seat.name,
 				code: booking.code,
 				entryTime: new Date(booking.entryTime),
@@ -62,15 +64,13 @@ export async function POST(req: Request) {
 		console.log("data: ", data);
 		const booking = BookingSchema.parse(data.data);
 
-		const res = createBooking(
+		const res = await createBooking(
 			booking as Omit<BookingSchema, "time"> & {
 				time: { hour: number; minute: number };
 			}
 		);
 
-		return NextResponse.json({
-			res,
-		});
+		return NextResponse.json(res as PostBookingResponseSChema);
 	} catch (err: any) {
 		console.log(err.message);
 		return new NextResponse(

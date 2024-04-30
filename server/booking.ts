@@ -6,6 +6,22 @@ import {
 } from "../lib/time-functions";
 import { BookingSchema } from "../lib/validations/booking";
 
+const getRoomSeatBookings = async (roomId: string) =>
+	await prisma.seat.findMany({
+		where: {
+			roomId,
+		},
+		include: {
+			bookings: {
+				select: {
+					entryTime: true,
+					exitTime: true,
+					status: true,
+				},
+			},
+		},
+	});
+
 const getSeatBookings = async () =>
 	await prisma.seat.findMany({
 		include: {
@@ -26,7 +42,11 @@ export const getBookings = () =>
 		include: {
 			customer: true,
 			status: true,
-			seat: true,
+			seat: {
+				include: {
+					room: true,
+				},
+			},
 		},
 	});
 
@@ -38,20 +58,27 @@ export const getUserBookings = (userId: string) =>
 		include: {
 			customer: true,
 			status: true,
-			seat: true,
+			seat: {
+				include: {
+					room: true,
+				},
+			},
 		},
 	});
 
-export const getAvaliableBooking = async () => {
+export const getAvaliableBooking = async (roomNumber: string) => {
 	// FIXME: change to variable opening and closing times
 	const startTime = new Date();
-	startTime.setHours(8, 0, 0, 0);
+	startTime.setUTCHours(8, 0, 0, 0);
 	const endTime = new Date();
-	endTime.setHours(21, 0, 0, 0);
+	endTime.setUTCHours(21, 0, 0, 0);
 
 	// const slots = generateTimeSlots(startTime, endTime);
 
-	const seats = (await getSeatBookings()).map((seat) => ({
+	const room = await prisma.room.findFirst({ where: { roomNumber } });
+	if (!room) throw new Error("room not found");
+
+	const seats = (await getRoomSeatBookings(room.id)).map((seat) => ({
 		...seat,
 		bookings: seat.bookings.filter(
 			(booking) =>
@@ -82,7 +109,13 @@ export const createBooking = async (
 		if (!pendingStatus) throw new Error("no Pending status");
 
 		// find seat with particular vacancy
-		const seats = await getSeatBookings();
+
+		const room = await prisma.room.findFirst({
+			where: { roomNumber: booking.roomNumber },
+		});
+		if (!room) throw new Error("room not found");
+
+		const seats = await getRoomSeatBookings(room.id);
 		const vacancies = seats.map((seat) => ({
 			seatId: seat.id,
 			seatVacancies: findVacantTimes(
@@ -102,7 +135,7 @@ export const createBooking = async (
 		);
 
 		const startTime = new Date();
-		startTime.setHours(booking.time.hour, booking.time.minute);
+		startTime.setUTCHours(booking.time.hour, booking.time.minute);
 
 		const bookingData = findSeatWithStartTimeAndDuration(
 			vacancies,
@@ -120,6 +153,9 @@ export const createBooking = async (
 				statusId: pendingStatus.id,
 				code,
 				...bookingData,
+			},
+			include: {
+				seat: true,
 			},
 		});
 	} catch (err) {

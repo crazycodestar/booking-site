@@ -2,19 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSeat, deleteSeat, getAllSeats } from "@/server/seat";
 import { GetSeatsResponseSchema } from "@/lib/validations/seat";
 import { GetBookingResponseSchema } from "@/lib/validations/booking";
+import { GetRoomsResponseSchema } from "../../../lib/validations/room";
+import { getAllRooms } from "../../../server/room";
 
 export async function GET(req: Request) {
 	// TODO: validate authority of request
 	try {
-		const seats: GetSeatsResponseSchema = (await getAllSeats()).map((seat) => ({
-			name: seat.name,
-			bookings: seat.bookings.map((booking) => ({
-				name: booking.customer.name as string,
-				status: booking.status
-					.status as GetBookingResponseSchema[number]["status"],
-				code: booking.code,
-				entryTime: new Date(booking.entryTime),
-				exitTime: new Date(booking.exitTime),
+		const seats: GetRoomsResponseSchema = (await getAllRooms()).map((room) => ({
+			name: room.roomNumber,
+			image: room.image,
+			seats: room.seats.map((seat) => ({
+				name: seat.name,
+				bookings: seat.bookings.map((booking) => ({
+					name: booking.customer.name as string,
+					status: booking.status
+						.status as GetBookingResponseSchema[number]["status"],
+					code: booking.code,
+					entryTime: new Date(booking.entryTime),
+					exitTime: new Date(booking.exitTime),
+				})),
 			})),
 		}));
 

@@ -50,7 +50,7 @@ export const UserBookingForm = ({ user }: UserBookingFormProps) => {
 		defaultValues: {
 			userId: user.id,
 			// time: new Time(currentTime.getHours(), currentTime.getMinutes()),
-			time: new Time(20, 0), //FIXME: reset to original time
+			// time: new Time(20, 0), //FIXME: reset to original time
 			duration: 0,
 		},
 	});
@@ -74,11 +74,7 @@ export const UserBookingForm = ({ user }: UserBookingFormProps) => {
 		queryFn: () => axios.get("/api/booking/vacant"),
 	});
 
-	const {
-		data: seats,
-		isLoading,
-		isError,
-	} = useQuery({
+	const { data: seats, isLoading } = useQuery({
 		//TODO: add react suspense
 		queryKey: ["seats"],
 		queryFn: async () => (await axios.get("/api/seat")).data,

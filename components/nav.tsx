@@ -4,10 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, LucideIcon } from "lucide-react";
 import { Card } from "@nextui-org/react";
+import { ReactElement, ReactNode } from "react";
 
-type SidebarNavItem = {
+export type SidebarNavItem = {
 	title: string;
 	disabled?: boolean;
 	external?: boolean;
@@ -33,10 +34,11 @@ export function DashboardNav({ items }: DashboardNavProps) {
 	}
 
 	return (
-		<nav className="border rounded-md w-full lg:h-full p-4">
+		<nav className="border rounded-md w-full lg:h-full lg:min-h-[600px] p-4">
 			<div className="flex lg:grid items-start gap-2">
 				{items.map((item, index) => {
-					const Icon = HelpCircle;
+					item;
+					// const Icon = item.Icon;
 					return (
 						item.href && (
 							<Link key={index} href={item.disabled ? "/" : item.href}>
@@ -47,7 +49,7 @@ export function DashboardNav({ items }: DashboardNavProps) {
 										item.disabled && "cursor-not-allowed opacity-80"
 									)}
 								>
-									<Icon className="mr-2 h-4 w-4" />
+									{/* <Icon className="mr-2 h-4 w-4" /> */}
 									<span>{item.title}</span>
 								</span>
 							</Link>

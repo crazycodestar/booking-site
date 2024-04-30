@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { getAvaliableBooking } from "@/server/booking";
 
-export async function GET() {
+export async function GET(
+	_: Request,
+	{ params }: { params: { roomName: string } }
+) {
 	try {
-		const vacancies = await getAvaliableBooking();
+		const roomName = params.roomName;
+
+		const vacancies = await getAvaliableBooking(roomName);
 		//      ^?
 
-		return NextResponse.json({
-			vacancies,
-		});
+		return NextResponse.json(vacancies);
 		// eslint-disable-next-line
 	} catch (error: any) {
 		console.log("error", error);

@@ -1,4 +1,12 @@
 "use client";
+
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Dialog,
 	DialogContent,
@@ -8,14 +16,22 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { TimeInput } from "@nextui-org/react";
-import { Time } from "@internationalized/date";
+import { parseTime } from "@internationalized/date";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { findAvaliableDuration, generateListings } from "@/lib/time-functions";
+import {
+	findAvaliableDuration,
+	formatTime,
+	generateListings,
+	getAvaliableTimeSlots,
+} from "@/lib/time-functions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { BookingSchema } from "@/lib/validations/booking";
+import {
+	BookingSchema,
+	GetBookingResponseSchema,
+	PostBookingResponseSChema,
+} from "@/lib/validations/booking";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -34,19 +50,30 @@ import useDebounce from "@/hooks/useDebounce";
 import { useState } from "react";
 import { GetSearchAccountResponseSchema } from "@/lib/validations/account";
 import { getInitials } from "@/lib/getInitials";
+import { GetRoomsResponseSchema } from "@/lib/validations/room";
+import { useRouter } from "next/navigation";
 
 interface BookingFormProps {
 	isAdmin: boolean;
 	userId?: string;
+	className?: string;
+	roomNumber?: string;
+	isAdminPage?: boolean;
 }
 
-export function BookingForm({ userId, isAdmin }: BookingFormProps) {
+export function BookingForm({
+	userId,
+	isAdmin,
+	className,
+	roomNumber: preAssignedRoomNumber,
+	isAdminPage = false,
+}: BookingFormProps) {
+	const router = useRouter();
 	const form = useForm<BookingSchema>({
 		resolver: zodResolver(BookingSchema),
 		defaultValues: {
 			userId: isAdmin ? "" : userId,
-			// time: new Time(currentTime.getHours(), currentTime.getMinutes()),
-			time: new Time(20, 0), //FIXME: reset to original time
+			roomNumber: preAssignedRoomNumber || "",
 			duration: 0,
 		},
 	});
@@ -55,19 +82,27 @@ export function BookingForm({ userId, isAdmin }: BookingFormProps) {
 	const mutation = useMutation({
 		mutationFn: (values: BookingSchema) =>
 			axios.post("api/booking", { data: values }),
-		onSuccess: () => {
+		onSuccess: ({ data }, variables) => {
+			console.log("successful");
 			queryClient.invalidateQueries({ queryKey: ["bookings", "vacancies"] });
+
 			toast({
 				//FIXME: change toast
 				title: "information",
-				description: "successful",
+				description: "Booking successful",
 			});
+
+			isAdminPage ? setIsOpen(false) : router.push("/home/mybookings");
 		},
 	});
 
-	const { data } = useQuery({
-		queryKey: ["vacancies"],
-		queryFn: () => axios.get("/api/booking/vacant"),
+	const roomNumber = form.watch("roomNumber");
+
+	const { data, isLoading: isGetVacanciesLoading } = useQuery({
+		queryKey: ["vacancies", roomNumber],
+		queryFn: async () =>
+			(await axios.get(`/api/booking/vacant/${roomNumber}`)).data,
+		enabled: Boolean(roomNumber),
 	});
 
 	const [details, setDetails] =
@@ -87,10 +122,22 @@ export function BookingForm({ userId, isAdmin }: BookingFormProps) {
 		? GetSearchAccountResponseSchema.parse(accounts)
 		: [];
 
+	const { data: rooms, isLoading: isRoomsLoading } = useQuery({
+		//TODO: add react suspense
+		queryKey: ["rooms"],
+		queryFn: async () => (await axios.get("/api/room")).data,
+	});
+
+	const formattedRooms = rooms ? GetRoomsResponseSchema.parse(rooms) : [];
+
+	const [isOpen, setIsOpen] = useState(false);
+
 	return (
-		<Dialog>
+		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTrigger asChild>
-				<Button variant="default">Create Booking</Button>
+				<Button className={className} variant="default">
+					Create Booking
+				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
@@ -103,6 +150,7 @@ export function BookingForm({ userId, isAdmin }: BookingFormProps) {
 					<form
 						onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
 					>
+						{/* <pre>{JSON.stringify(form.watch(), null, 2)}</pre> */}
 						<div className="grid gap-4 py-4">
 							{isAdmin && (
 								<FormField
@@ -198,35 +246,41 @@ export function BookingForm({ userId, isAdmin }: BookingFormProps) {
 									)}
 								/>
 							)}
+
+							<FormField
+								control={form.control}
+								name="roomNumber"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Room No</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											defaultValue={field.value}
+										>
+											<FormControl>
+												<SelectTrigger className="w-full">
+													<SelectValue placeholder="Select Room" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{formattedRooms.map((room, index) => (
+													<SelectItem key={index} value={room.name}>
+														{room.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 							<FormField
 								control={form.control}
 								name="time"
 								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>Event Time</FormLabel>
-											<FormControl>
-												<TimeInput
-													aria-label="Event Time"
-													defaultValue={field.value}
-													onChange={field.onChange}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								control={form.control}
-								name="duration"
-								render={({ field }) => {
-									const startTime = form.watch("time");
+									if (isGetVacanciesLoading) return <div>loading...</div>;
 
-									// TODO: proper skeleton loading
-									if (!data) return <div>loading...</div>;
-
-									const vacancies: [string, string][][] = data.data.vacancies; //FIXME: add types;
+									const vacancies: [string, string][][] = data || []; //FIXME: add types;
 									const formattedVacancies = vacancies.map((vacancy) =>
 										vacancy.map(
 											(vacant) =>
@@ -236,50 +290,109 @@ export function BookingForm({ userId, isAdmin }: BookingFormProps) {
 												]
 										)
 									);
-									const DateTimeTimeValue = new Date();
-									DateTimeTimeValue.setHours(
-										startTime.hour,
-										startTime.minute,
-										0,
-										0
-									);
 
-									const duration = findAvaliableDuration(
-										formattedVacancies,
-										DateTimeTimeValue
-									);
-
-									const listings = generateListings(120, duration, 30);
+									const avaliableTimeSlots =
+										getAvaliableTimeSlots(formattedVacancies);
 
 									return (
 										<FormItem>
-											<FormLabel>Duration</FormLabel>
-											<FormControl>
-												{/* TODO: add a "right now" time option */}
-												{/* <div className="flex flex-col gap-2 justify-start items-start"> */}
-												<div className="flex items-center gap-4">
-													{listings.map((option, index) => (
-														<Button
-															type="button"
-															onClick={() => field.onChange(option.value)}
-															variant={
-																field.value === option.value
-																	? "default"
-																	: "outline"
-															}
-															key={index}
-														>
-															{option.name}
-														</Button>
+											<FormLabel>Event Time</FormLabel>
+
+											<Select
+												onValueChange={(value) =>
+													field.onChange(parseTime(value))
+												}
+											>
+												<FormControl>
+													<SelectTrigger className="w-full">
+														<SelectValue placeholder="Event Time" />
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													{avaliableTimeSlots.map((time, index) => (
+														<SelectItem key={index} value={formatTime(time)}>
+															{formatTime(time)}
+														</SelectItem>
 													))}
-												</div>
-												{/* </div> */}
-											</FormControl>
+												</SelectContent>
+											</Select>
+											{/* <FormControl>
+												<TimeInput
+													aria-label="Event Time"
+													defaultValue={field.value}
+													onChange={field.onChange}
+												/>
+											</FormControl> */}
 											<FormMessage />
 										</FormItem>
 									);
 								}}
 							/>
+							{form.watch("time") && (
+								<FormField
+									control={form.control}
+									name="duration"
+									render={({ field }) => {
+										const startTime = form.watch("time");
+
+										// TODO: proper skeleton loading
+										if (isGetVacanciesLoading) return <div>loading...</div>;
+
+										const vacancies: [string, string][][] = data || []; //FIXME: add types;
+										const formattedVacancies = vacancies.map((vacancy) =>
+											vacancy.map(
+												(vacant) =>
+													[new Date(vacant[0]), new Date(vacant[1])] as [
+														Date,
+														Date
+													]
+											)
+										);
+										const DateTimeTimeValue = new Date();
+										DateTimeTimeValue.setUTCHours(
+											startTime.hour,
+											startTime.minute,
+											0,
+											0
+										);
+
+										const duration = findAvaliableDuration(
+											formattedVacancies,
+											DateTimeTimeValue
+										);
+
+										const listings = generateListings(120, duration, 30);
+
+										return (
+											<FormItem>
+												<FormLabel>Duration</FormLabel>
+												<FormControl>
+													{/* TODO: add a "right now" time option */}
+													{/* <div className="flex flex-col gap-2 justify-start items-start"> */}
+													<div className="flex items-center gap-4">
+														{listings.map((option, index) => (
+															<Button
+																type="button"
+																onClick={() => field.onChange(option.value)}
+																variant={
+																	field.value === option.value
+																		? "default"
+																		: "outline"
+																}
+																key={index}
+															>
+																{option.name}
+															</Button>
+														))}
+													</div>
+													{/* </div> */}
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										);
+									}}
+								/>
+							)}
 						</div>
 						<DialogFooter>
 							<Button type="submit">Create Booking</Button>

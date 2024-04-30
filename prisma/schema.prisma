@@ -46,6 +46,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   bookings Booking[]
+  score Int @default(10)
   role Role @relation(fields: [roleId], references: [id])
   roleId String
 }
@@ -61,10 +62,19 @@ model VerificationRequest {
   @@unique([identifier, token])
 }
 
+model Room {
+  id String @id @default(cuid())
+  roomNumber String @unique
+  image String?
+  seats Seat[]
+}
+
 model Seat {
   id String @id @default(cuid())
   name String @unique
   bookings Booking[]
+  room Room @relation(fields: [roomId], references: [id])
+  roomId String
 }
 
 model Booking {
@@ -83,12 +93,12 @@ model Booking {
 
 model BookingStatus {
   id String @id @default(cuid())
-  status String
+  status String @unique
   booking Booking[]
 }
 
 model Role {
   id String @id @default(cuid())
-  role String
+  role String @unique
   user User[]
 }

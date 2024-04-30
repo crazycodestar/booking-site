@@ -20,3 +20,12 @@ export const userRegistrationSchema = z.object({
 });
 
 export type userRegistrationSchema = z.infer<typeof userRegistrationSchema>;
+
+export const GetUserResponseSchema = z.object({
+	id: z.string(),
+	name: z.string().nullable(),
+	email: z.string().nullable(),
+	role: z.object({ role: z.string() }),
+});
+
+export type GetUserResponseSchema = z.infer<typeof GetUserResponseSchema>;

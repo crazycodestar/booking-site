@@ -16,11 +16,12 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "./ui/button";
+import { BookingTicket } from "./booking-ticket";
 
 export function UserBookingPreview() {
 	const { data, isLoading } = useQuery({
@@ -59,32 +60,21 @@ export function UserBookingPreview() {
 
 					return (
 						<Card key={index} className="col-span-1 shadow-md overflow-hidden">
-							<Image
-								alt="Product 1"
-								className="w-full h-48 object-cover p-4"
-								height="200"
-								src="/placeholder.svg"
-								style={{
-									aspectRatio: "300/200",
-									objectFit: "cover",
-								}}
-								width="300"
-							/>
 							<div className="p-4">
-								<div className="flex w-full justify-between">
-									<h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary">
+								<div className="flex w-full justify-between items-center">
+									<h3 className="text-lg font-semibold text-secondary-foreground group-hover:text-primary">
 										{booking.code}
 									</h3>
-									<p>{booking.seat}</p>
+									<p>{booking.room}</p>
 								</div>
 
 								<div className="flex gap-3">
 									<div className="flex items-center gap-1">
-										<p className="text-sm text-gray-500 line-clamp-2">
+										<p className="text-sm text-foreground line-clamp-2">
 											{formatTime(booking.entryTime)}
 										</p>
 										<span>-</span>
-										<p className="text-sm text-gray-500 line-clamp-2">
+										<p className="text-sm text-foreground line-clamp-2">
 											{booking.exitTime && formatTime(booking.exitTime)}
 										</p>
 									</div>
@@ -99,7 +89,30 @@ export function UserBookingPreview() {
 										bookingCode={booking.code}
 										disabled={booking.status === "CANCELLED"}
 									/>
-									<Button variant={"outline"}>info</Button>
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button variant="outline">
+												<InfoIcon className="w-4 h-4" />
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>
+													Booking Ticket details
+												</AlertDialogTitle>
+												<AlertDialogDescription>
+													This is the booking information. Do not share this
+													with anyone
+												</AlertDialogDescription>
+											</AlertDialogHeader>
+											<div>
+												<BookingTicket bookingDetails={booking} />
+											</div>
+											<AlertDialogFooter>
+												<AlertDialogCancel>Close</AlertDialogCancel>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
 								</div>
 							</div>
 						</Card>

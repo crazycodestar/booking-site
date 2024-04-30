@@ -19,23 +19,16 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "./ui/dialog";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Prisma } from "@prisma/client";
 import { Badge } from "./ui/badge";
+import { useRouter } from "next/navigation";
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
-	user: Pick<User, "name" | "image" | "email">;
+	user: Pick<User, "name" | "image" | "email" | "role">;
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
-	const { data, isLoading } = useQuery({
-		queryKey: ["role"],
-		queryFn: async () =>
-			(await axios.get("api/account")).data as { role: { role: string } },
-	});
-
-	const isAdmin = data?.role.role === "ADMIN";
+	const isAdmin = user.role === "ADMIN";
+	const router = useRouter();
 
 	return (
 		<Dialog>
@@ -62,6 +55,13 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
 					<DialogTrigger asChild>
 						<DropdownMenuItem>Profile</DropdownMenuItem>
 					</DialogTrigger>
+
+					<DropdownMenuItem onClick={() => router.push("/home")}>
+						Home
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => router.push("/dashboard")}>
+						Dashboard
+					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						className="cursor-pointer"

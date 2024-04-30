@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { GetBookingResponseSchema } from "@/lib/validations/booking";
 import { CancelBookingButton } from "@/components/cancel-booking-button";
+import { formatTime } from "@/lib/time-functions";
 
 export const bookingColumns: ColumnDef<GetBookingResponseSchema[number]>[] = [
 	{
@@ -16,14 +17,17 @@ export const bookingColumns: ColumnDef<GetBookingResponseSchema[number]>[] = [
 	{
 		accessorKey: "entryTime",
 		header: "Entry Time",
+
+		cell: ({ cell }) => formatTime(new Date(cell.getValue())),
 	},
 	{
 		accessorKey: "exitTime",
 		header: "Exit Time",
+		cell: ({ cell }) => formatTime(new Date(cell.getValue())),
 	},
 	{
-		accessorKey: "seat",
-		header: "Seat No",
+		accessorKey: "room",
+		header: "Room No",
 	},
 	{
 		accessorKey: "status",

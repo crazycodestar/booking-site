@@ -45,6 +45,7 @@ import axios from "axios";
 import { GetOneBookingResponseSchema } from "@/lib/validations/booking";
 import { formatCode } from "@/lib/format-number";
 import { useCallback, useEffect, useState } from "react";
+import { formatTime } from "@/lib/time-functions";
 
 const FormSchema = z.object({
 	code: z.string().min(6, {
@@ -196,13 +197,13 @@ const BookingTicket = ({ code }: { code: string }) => {
 					<div className="grid gap-0.5">
 						<div className="text-muted-foreground">Entry time</div>
 						<div className="font-medium">
-							{formattedBooking.entryTime.toString()}
+							{formatTime(formattedBooking.entryTime)}
 						</div>
 					</div>
 					<div className="grid gap-0.5">
 						<div className="text-muted-foreground">Exit time</div>
 						<div className="font-medium">
-							{formattedBooking.exitTime.toString()}
+							{formatTime(formattedBooking.exitTime)}
 						</div>
 					</div>
 				</div>

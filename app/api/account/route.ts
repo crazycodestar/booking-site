@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { userRegistrationSchema } from "@/lib/validations/auth";
+import {
+	GetUserResponseSchema,
+	userRegistrationSchema,
+} from "@/lib/validations/auth";
 import { createUser, getUser } from "@/server/user";
 import { getToken } from "next-auth/jwt";
 
@@ -33,7 +36,7 @@ export async function GET(req: NextRequest) {
 	}
 	const userId = token.id as string;
 	try {
-		const user = await getUser(userId);
+		const user = (await getUser(userId)) as GetUserResponseSchema;
 		return NextResponse.json(user);
 	} catch (err: any) {
 		return new NextResponse(
