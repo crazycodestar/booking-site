@@ -189,8 +189,8 @@ const BookingTicket = ({ code }: { code: string }) => {
 						<div className="font-medium">{formattedBooking.name}</div>
 					</div>
 					<div className="grid gap-0.5">
-						<div className="text-muted-foreground">Seat</div>
-						<div className="font-medium">{formattedBooking.seat}</div>
+						<div className="text-muted-foreground">Room No.</div>
+						<div className="font-medium">{formattedBooking.roomNumber}</div>
 					</div>
 				</div>
 				<div className="grid grid-cols-2 gap-1.5 text-sm">

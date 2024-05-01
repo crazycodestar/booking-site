@@ -170,7 +170,11 @@ export const getBooking = async (code: string) => {
 			code: code,
 		},
 		include: {
-			seat: true,
+			seat: {
+				include: {
+					room: true,
+				},
+			},
 			customer: true,
 		},
 	});

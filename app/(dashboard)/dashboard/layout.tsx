@@ -35,30 +35,32 @@ export type DashboardConfig = {
 export const dashboardConfig: DashboardConfig = {
 	mainNav: [
 		{
-			title: "Documentation",
-			href: "/docs",
+			title: "Home",
+			href: "/home",
 		},
 		{
-			title: "Support",
-			href: "/support",
+			title: "Dashboard",
+			href: "/dashboard",
+		},
+		{
+			title: "Customer Services",
+			href: "/customercare",
 			disabled: true,
 		},
 	],
 	sidebarNav: [
 		{
-			title: "Posts",
-			href: "/dashboard",
-			// icon: "post",
+			title: "Library Rooms",
+			href: "/home",
 		},
 		{
-			title: "Billing",
-			href: "/dashboard/billing",
-			// icon: "billing",
+			title: "My Bookings",
+			href: "/home/mybookings",
 		},
 		{
-			title: "Settings",
-			href: "/dashboard/settings",
-			// icon: "settings",
+			title: "Customer Services",
+			href: "/home#",
+			disabled: true,
 		},
 	],
 };
@@ -80,12 +82,13 @@ export default async function DashboardLayout({
 		<div className="flex min-h-screen flex-col space-y-6">
 			<header className="sticky top-0 z-40 border-b bg-background">
 				<div className="container flex h-16 items-center justify-between py-4">
-					<MainNav />
+					<MainNav items={dashboardConfig.mainNav} />
 					<UserAccountNav
 						user={{
 							name: user.name,
 							image: user.image,
 							email: user.email,
+							role: user.role,
 						}}
 					/>
 				</div>

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { BookmarkIcon, HomeIcon } from "lucide-react";
 import { ReactElement } from "react";
 import { SidebarNavItem } from "@/components/nav";
+import { dashboardConfig } from "@/app/(dashboard)/dashboard/layout";
 
 export type NavItem = {
 	title: string;
@@ -21,35 +22,6 @@ export type MainNavItem = NavItem;
 export type DashboardConfig = {
 	mainNav: MainNavItem[];
 	sidebarNav: SidebarNavItem[];
-};
-
-export const dashboardConfig: DashboardConfig = {
-	mainNav: [
-		{
-			title: "Documentation",
-			href: "/docs",
-		},
-		{
-			title: "Support",
-			href: "/support",
-			disabled: true,
-		},
-	],
-	sidebarNav: [
-		{
-			title: "Library Rooms",
-			href: "/home",
-		},
-		{
-			title: "My Bookings",
-			href: "/home/mybookings",
-		},
-		{
-			title: "Customer Services",
-			href: "/home#",
-			disabled: true,
-		},
-	],
 };
 
 interface DashboardLayoutProps {
@@ -69,7 +41,7 @@ export default async function DashboardLayout({
 		<div className="flex min-h-screen flex-col space-y-6">
 			<header className="sticky top-0 z-40 bg-background">
 				<div className="container flex h-16 items-center justify-between py-4">
-					<MainNav />
+					<MainNav items={dashboardConfig.mainNav} />
 					<UserAccountNav
 						user={{
 							name: user.name,

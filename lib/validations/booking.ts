@@ -50,7 +50,7 @@ export const GetOneBookingResponseSchema = z.object({
 	code: z.string(),
 	entryTime: z.coerce.date(),
 	exitTime: z.coerce.date(),
-	seat: z.string(),
+	roomNumber: z.string(),
 });
 
 export type GetOneBookingResponseSchema = z.infer<

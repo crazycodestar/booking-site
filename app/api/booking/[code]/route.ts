@@ -16,7 +16,7 @@ export const GET = async (
 			entryTime: booking.entryTime,
 			exitTime: booking.exitTime,
 			name: booking.customer.name as string,
-			seat: booking.seat.name,
+			roomNumber: booking.seat.room.roomNumber,
 		};
 
 		return NextResponse.json(data);

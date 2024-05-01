@@ -18,13 +18,36 @@ export function generateTimeSlots() {
 	return timeSlots;
 }
 
+export function isFirstTimeEarlierAndNotEqualTo(
+	firstDate: Date,
+	secondDate: Date
+) {
+	// Extract hours and minutes from the first date
+	const hours1 = firstDate.getUTCHours();
+	const minutes1 = firstDate.getUTCMinutes();
+
+	// Extract hours and minutes from the second date
+	const hours2 = secondDate.getUTCHours();
+	const minutes2 = secondDate.getUTCMinutes();
+
+	// Compare hours first
+	if (hours1 < hours2) {
+		return true;
+	} else if (hours1 > hours2) {
+		return false;
+	}
+
+	// If hours are the same, compare minutes
+	return minutes1 < minutes2;
+}
+
 const generateStartTimeArray = (vacancies: [Date, Date][]): Date[] => {
 	return generateTimeSlots().filter((timeSlot) =>
 		Boolean(
 			vacancies.find(
 				(vacancyRange) =>
 					isFirstTimeEarlier(vacancyRange[0], timeSlot) &&
-					isFirstTimeEarlier(timeSlot, vacancyRange[1])
+					isFirstTimeEarlierAndNotEqualTo(timeSlot, vacancyRange[1])
 			)
 		)
 	);
