@@ -84,7 +84,7 @@ export function BookingForm({
 			axios.post("api/booking", { data: values }),
 		onSuccess: ({ data }, variables) => {
 			console.log("successful");
-			queryClient.invalidateQueries({ queryKey: ["bookings", "vacancies"] });
+			queryClient.invalidateQueries({ queryKey: ["bookings"] });
 
 			toast({
 				//FIXME: change toast
@@ -150,7 +150,6 @@ export function BookingForm({
 					<form
 						onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
 					>
-						{/* <pre>{JSON.stringify(form.watch(), null, 2)}</pre> */}
 						<div className="grid gap-4 py-4">
 							{isAdmin && (
 								<FormField

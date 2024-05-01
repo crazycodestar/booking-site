@@ -28,7 +28,8 @@ interface DashboardNavProps {
 export function DashboardNav({ items }: DashboardNavProps) {
 	const { data, isLoading } = useQuery({
 		queryKey: ["account"],
-		queryFn: async () => (await axios.get("api/account")).data,
+		queryFn: async () =>
+			await fetch("../api/account").then((res) => res.json()),
 	});
 
 	const formattedUserScore = data
@@ -43,8 +44,8 @@ export function DashboardNav({ items }: DashboardNavProps) {
 
 	return (
 		<nav className="border rounded-md w-full lg:h-full lg:min-h-[600px] p-4">
-			<div className="flex lg:grid items-start gap-2">
-				<div className="flex justify-between py-4 px-2">
+			<div className="flex lg:grid gap-2 items-center">
+				<div className="flex justify-between py-4 px-2 gap-2">
 					<h3 className="text-primary text-medium font-bold">
 						Booking Credit Score
 					</h3>

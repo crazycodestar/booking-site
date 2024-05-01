@@ -26,7 +26,8 @@ import { BookingTicket } from "./booking-ticket";
 export function UserBookingPreview() {
 	const { data, isLoading } = useQuery({
 		queryKey: ["bookings"],
-		queryFn: async () => await fetch("/api/booking").then((res) => res.json()),
+		queryFn: async () =>
+			await fetch("../api/booking").then((res) => res.json()),
 	});
 
 	if (isLoading) return <p>loading...</p>;
@@ -135,12 +136,12 @@ export function CancelBookingButton({
 	const queryClient = useQueryClient();
 	const mutation = useMutation({
 		mutationFn: (bookingCode: string) =>
-			axios.patch("api/booking/cancel", { data: { bookingCode } }),
+			axios.patch("../api/booking/cancel", { data: { bookingCode } }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["bookings"] });
 			toast({
 				title: "successful",
-				description: "Seat was deleted successfully",
+				description: "Seat was cancelled successfully",
 			});
 		},
 	});

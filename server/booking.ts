@@ -101,8 +101,6 @@ export const createBooking = async (
 	}
 ) => {
 	try {
-		// get random customer FIXME: proper customer
-		const userId = (await prisma.user.findMany())[0].id;
 		const pendingStatus = await prisma.bookingStatus.findFirst({
 			where: { status: "PENDING" },
 		});
@@ -149,7 +147,7 @@ export const createBooking = async (
 
 		return await prisma.booking.create({
 			data: {
-				customerId: userId,
+				customerId: booking.userId,
 				statusId: pendingStatus.id,
 				code,
 				...bookingData,
