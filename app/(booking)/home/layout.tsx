@@ -81,10 +81,14 @@ export default async function DashboardLayout({
 				</div>
 			</header>
 			<div className="py-6">
-				<h1 className="text-3xl font-bold text-center text-foreground">
+				<h1 className="text-4xl font-bold text-center text-foreground">
 					Let&apos;s help you find a room. <br /> Choose a room that suites your
 					taste
 				</h1>
+				<p className="text-lg text-center font-medium text-muted-foreground">
+					Booking rooms that have other bookings let&apos;s you study with
+					friends
+				</p>
 			</div>
 
 			{/* <div className="container hidden md:block">

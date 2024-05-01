@@ -24,7 +24,10 @@ export default async function DashboardPage() {
 
 	return (
 		<DashboardShell>
-			<DashboardHeader heading="Posts" text="Create and manage posts.">
+			<DashboardHeader
+				heading="Booking Dashboard"
+				text="Create and manage bookings."
+			>
 				<div className="flex flex-col sm:flex-row gap-4">
 					<BookingForm isAdminPage isAdmin={isAdmin} userId={user.id} />
 					{isAdmin && (

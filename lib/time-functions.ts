@@ -30,6 +30,32 @@ const generateStartTimeArray = (vacancies: [Date, Date][]): Date[] => {
 	);
 };
 
+function mergeAndRemoveDuplicates(arr1: Date[], arr2: Date[]) {
+	// Merge the arrays
+	const mergedArray = arr1.concat(arr2);
+
+	// Create an empty object to store unique values
+	const uniqueValues: Record<string, boolean> = {};
+
+	// Loop through the merged array
+	for (let i = 0; i < mergedArray.length; i++) {
+		// Add each element as a key to the object
+		const timeAsString = formatTime(mergedArray[i]);
+		uniqueValues[timeAsString] = true;
+	}
+
+	// Get the keys (unique values) from the object
+	const resultArray = Object.keys(uniqueValues)
+		.map(
+			(key) =>
+				arr1.find((element) => formatTime(element) === key) ||
+				arr2.find((element) => formatTime(element) === key)
+		)
+		.filter((element) => element !== undefined);
+
+	return resultArray as Date[];
+}
+
 export const getAvaliableTimeSlots = (roomVacancies: [Date, Date][][]) => {
 	return roomVacancies.reduce(
 		(accumulatedStartTimeArray, currentSeatVacancies) => {
@@ -37,10 +63,10 @@ export const getAvaliableTimeSlots = (roomVacancies: [Date, Date][][]) => {
 				generateStartTimeArray(currentSeatVacancies);
 			if (!accumulatedStartTimeArray.length) return currentStartTimeArray;
 
-			const toSortedStartTimeArray = [
-				...accumulatedStartTimeArray,
-				...currentStartTimeArray,
-			];
+			const toSortedStartTimeArray = mergeAndRemoveDuplicates(
+				accumulatedStartTimeArray,
+				currentStartTimeArray
+			);
 			toSortedStartTimeArray.sort((a, b) => compareDates(a, b));
 
 			return toSortedStartTimeArray;
