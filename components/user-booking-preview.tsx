@@ -88,7 +88,10 @@ export function UserBookingPreview() {
 								<div className="mt-4 w-full flex flex-col gap-2">
 									<CancelBookingButton
 										bookingCode={booking.code}
-										disabled={booking.status === "CANCELLED"}
+										disabled={
+											booking.status === "CANCELLED" ||
+											booking.status === "ACTIVE"
+										}
 									/>
 									<AlertDialog>
 										<AlertDialogTrigger asChild>

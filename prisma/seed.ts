@@ -7,118 +7,118 @@ const generateRoomNumber = (index: number) => "00" + index;
 
 async function main() {
 	// // create roles
-	const roleNames = ["ADMIN", "USER"];
-	const roles = await Promise.all(
-		roleNames.map(async (role) => {
-			const result = await prisma.role.upsert({
-				where: {
-					role,
-				},
-				update: {},
-				create: {
-					role: role,
-				},
-			});
+	// const roleNames = ["ADMIN", "USER"];
+	// const roles = await Promise.all(
+	// 	roleNames.map(async (role) => {
+	// 		const result = await prisma.role.upsert({
+	// 			where: {
+	// 				role,
+	// 			},
+	// 			update: {},
+	// 			create: {
+	// 				role: role,
+	// 			},
+	// 		});
 
-			return result;
-		})
-	);
+	// 		return result;
+	// 	})
+	// );
 
-	if (!roles.length) throw new Error("No roles created");
+	// if (!roles.length) throw new Error("No roles created");
 
-	// create User
+	// // create User
 
-	const adminRole = roles.find((role) => role.role === "ADMIN");
-	if (!adminRole) throw new Error("No Admin role found");
+	// const adminRole = roles.find((role) => role.role === "ADMIN");
+	// if (!adminRole) throw new Error("No Admin role found");
 
-	const email = "admin@admin.com";
-	const password = await hash("password123", 12);
-	const user = await prisma.user.upsert({
-		where: {
-			email,
-		},
-		update: {},
-		create: {
-			email,
-			name: "Admin",
-			password,
-			roleId: adminRole.id,
-		},
-	});
+	// const email = "admin@admin.com";
+	// const password = await hash("password123", 12);
+	// const user = await prisma.user.upsert({
+	// 	where: {
+	// 		email,
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		email,
+	// 		name: "Admin",
+	// 		password,
+	// 		roleId: adminRole.id,
+	// 	},
+	// });
 
-	// create booking status
+	// // create booking status
 
-	const bookingStatusNames = [
-		"PENDING",
-		"ACTIVE",
-		"USED",
-		"EXPIRED",
-		"CANCELLED",
-	];
-	const bookingStatusPending = await prisma.bookingStatus.upsert({
-		where: {
-			status: "PENDING",
-		},
-		update: {},
-		create: {
-			status: "PENDING",
-		},
-	});
+	// const bookingStatusNames = [
+	// 	"PENDING",
+	// 	"ACTIVE",
+	// 	"USED",
+	// 	"EXPIRED",
+	// 	"CANCELLED",
+	// ];
+	// const bookingStatusPending = await prisma.bookingStatus.upsert({
+	// 	where: {
+	// 		status: "PENDING",
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		status: "PENDING",
+	// 	},
+	// });
 
-	if (!bookingStatusPending)
-		throw new Error("bookstatus not created. status: " + "PENDING");
+	// if (!bookingStatusPending)
+	// 	throw new Error("bookstatus not created. status: " + "PENDING");
 
-	const bookingStatusActive = await prisma.bookingStatus.upsert({
-		where: {
-			status: "ACTIVE",
-		},
-		update: {},
-		create: {
-			status: "ACTIVE",
-		},
-	});
+	// const bookingStatusActive = await prisma.bookingStatus.upsert({
+	// 	where: {
+	// 		status: "ACTIVE",
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		status: "ACTIVE",
+	// 	},
+	// });
 
-	if (!bookingStatusActive)
-		throw new Error("bookstatus not created. status: " + "ACTIVE");
+	// if (!bookingStatusActive)
+	// 	throw new Error("bookstatus not created. status: " + "ACTIVE");
 
-	const bookingStatusUsed = await prisma.bookingStatus.upsert({
-		where: {
-			status: "USED",
-		},
-		update: {},
-		create: {
-			status: "USED",
-		},
-	});
+	// const bookingStatusUsed = await prisma.bookingStatus.upsert({
+	// 	where: {
+	// 		status: "USED",
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		status: "USED",
+	// 	},
+	// });
 
-	if (!bookingStatusUsed)
-		throw new Error("bookstatus not created. status: " + "USED");
+	// if (!bookingStatusUsed)
+	// 	throw new Error("bookstatus not created. status: " + "USED");
 
-	const bookingStatusCancelled = await prisma.bookingStatus.upsert({
-		where: {
-			status: "CANCELLED",
-		},
-		update: {},
-		create: {
-			status: "CANCELLED",
-		},
-	});
+	// const bookingStatusCancelled = await prisma.bookingStatus.upsert({
+	// 	where: {
+	// 		status: "CANCELLED",
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		status: "CANCELLED",
+	// 	},
+	// });
 
-	if (!bookingStatusCancelled)
-		throw new Error("bookstatus not created. status: " + "CANCELLED");
+	// if (!bookingStatusCancelled)
+	// 	throw new Error("bookstatus not created. status: " + "CANCELLED");
 
-	const bookingStatusExpired = await prisma.bookingStatus.upsert({
-		where: {
-			status: "EXPIRED",
-		},
-		update: {},
-		create: {
-			status: "EXPIRED",
-		},
-	});
+	// const bookingStatusExpired = await prisma.bookingStatus.upsert({
+	// 	where: {
+	// 		status: "EXPIRED",
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		status: "EXPIRED",
+	// 	},
+	// });
 
-	if (!bookingStatusExpired)
-		throw new Error("bookstatus not created. status: " + "EXPIRED");
+	// if (!bookingStatusExpired)
+	// 	throw new Error("bookstatus not created. status: " + "EXPIRED");
 
 	// create Rooms and seats
 	const images = [
@@ -134,80 +134,70 @@ async function main() {
 		"https://images.pexels.com/photos/6183137/pexels-photo-6183137.jpeg?auto=compress&cs=tinysrgb&w=600",
 	];
 
-	const rooms = await Promise.all(
-		images.map(async (image, index) => {
-			const roomNumber = generateRoomNumber(index + 1);
-			const room = await prisma.room.upsert({
-				where: {
-					roomNumber: roomNumber,
-				},
-				update: {},
-				create: {
-					roomNumber: roomNumber,
-					image: image,
-				},
-				include: {
-					seats: true,
-				},
-			});
-
-			if (!room) throw new Error("room not created room: " + roomNumber);
-			return room;
-		})
-	);
-
-	if (!rooms.length) throw new Error("No rooms created");
-
-	// Create Seats
-
-	rooms.forEach(async (room) => {
-		if (room.seats.length > 0) return;
-
-		const seat = await prisma.seat.createMany({
-			data: [
-				{
-					name: "001",
-					roomId: room.id,
-				},
-				{
-					name: "002",
-					roomId: room.id,
-				},
-				{
-					name: "003",
-					roomId: room.id,
-				},
-				{
-					name: "004",
-					roomId: room.id,
-				},
-				{
-					name: "005",
-					roomId: room.id,
-				},
-				{
-					name: "006",
-					roomId: room.id,
-				},
-				{
-					name: "007",
-					roomId: room.id,
-				},
-				{
-					name: "008",
-					roomId: room.id,
-				},
-				{
-					name: "009",
-					roomId: room.id,
-				},
-				{
-					name: "0010",
-					roomId: room.id,
-				},
-			],
-		});
+	const room = await prisma.room.createMany({
+		data: [
+			{
+				roomNumber: "001",
+				image:
+					"https://images.pexels.com/photos/3747299/pexels-photo-3747299.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "002",
+				image:
+					"https://images.pexels.com/photos/3747293/pexels-photo-3747293.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "003",
+				image:
+					"https://images.pexels.com/photos/1370296/pexels-photo-1370296.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "004",
+				image:
+					"https://images.pexels.com/photos/3747416/pexels-photo-3747416.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "005",
+				image:
+					"https://images.pexels.com/photos/3747443/pexels-photo-3747443.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "006",
+				image:
+					"https://images.pexels.com/photos/927022/pexels-photo-927022.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "007",
+				image:
+					"https://images.pexels.com/photos/3975569/pexels-photo-3975569.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "008",
+				image:
+					"https://images.pexels.com/photos/19328775/pexels-photo-19328775/free-photo-of-laptop-standing-on-the-desk-in-a-modern-interior.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "009",
+				image:
+					"https://images.pexels.com/photos/2319419/pexels-photo-2319419.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+			{
+				roomNumber: "0010",
+				image:
+					"https://images.pexels.com/photos/6183137/pexels-photo-6183137.jpeg?auto=compress&cs=tinysrgb&w=600",
+			},
+		],
 	});
+
+	// 	const seat = await prisma.seat.createMany({
+	// 		data: [
+	// 			{
+	// 				name: "001",
+	// 				roomId: room.id,
+	// 			},
+	// 		],
+	// 	});
+	// });
 }
 main()
 	.then(() => prisma.$disconnect())
@@ -216,3 +206,7 @@ main()
 		await prisma.$disconnect();
 		process.exit(1);
 	});
+
+// "prisma": {
+// 	"seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+// }

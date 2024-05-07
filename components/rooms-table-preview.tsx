@@ -21,7 +21,12 @@ export const RoomTablePreview = () => {
 	return (
 		<div>
 			<Suspense fallback="loading...">
-				<DataTable data={formattedData} columns={roomColumns} />
+				<DataTable
+					data={formattedData.sort(
+						(a, b) => parseInt(a.name) - parseInt(b.name)
+					)}
+					columns={roomColumns}
+				/>
 			</Suspense>
 		</div>
 	);

@@ -18,12 +18,12 @@ export const bookingColumns: ColumnDef<GetBookingResponseSchema[number]>[] = [
 		accessorKey: "entryTime",
 		header: "Entry Time",
 
-		cell: ({ cell }) => formatTime(new Date(cell.getValue())),
+		cell: ({ cell }) => formatTime(new Date(cell.getValue() as string)),
 	},
 	{
 		accessorKey: "exitTime",
 		header: "Exit Time",
-		cell: ({ cell }) => formatTime(new Date(cell.getValue())),
+		cell: ({ cell }) => formatTime(new Date(cell.getValue() as string)),
 	},
 	{
 		accessorKey: "room",
@@ -36,8 +36,7 @@ export const bookingColumns: ColumnDef<GetBookingResponseSchema[number]>[] = [
 	{
 		id: "actions",
 		cell: ({ row }) => {
-			const bookingCode = row.getValue("name") as string;
-
+			const bookingCode = row.getValue("code") as string;
 			return <CancelBookingButton bookingCode={bookingCode} />;
 		},
 	},
